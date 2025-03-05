@@ -1,0 +1,42 @@
+- name: Install zsh
+  apt:
+    name: zsh
+    state: present
+
+- name: Change shell to zsh
+  user:
+    name: "{{ ansible_user_id }}"
+    shell: /bin/zsh
+
+- name: Install oh-my-zsh
+  block:
+    - name: Check if oh-my-zsh exists
+      stat:
+        path: "~/.oh-my-zsh"
+      register: omz_check
+
+    - name: Install oh-my-zsh
+      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+      become: false
+      become_user: "{{ ansible_user_id }}"
+      when: not omz_check.stat.exists
+
+- name: Install powerlevel10k
+  git:
+    repo: https://github.com/romkatv/powerlevel10k.git
+    dest: /home/{{ ansible_user_id }}/.oh-my-zsh/custom/themes/powerlevel10k
+
+- name: Set zsh theme to powerlevel10k
+  replace:
+    path: /home/{{ ansible_user_id }}/.zshrc
+    regexp: 'ZSH_THEME="robbyrussell"'
+    replace: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
+
+- name: Install Zeoxide
+  shell: curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+
+- name: Setup Zeoxide
+  lineinfile:
+    path: "/home/{{ ansible_user_id }}/.zshrc"
+    line: "eval \"$(zoxide init zsh)\""
+    state: present

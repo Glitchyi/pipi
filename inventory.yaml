@@ -1,0 +1,9 @@
+servers:
+    hosts:
+        pipi:
+            ansible_host: 10.12.27.18
+            ansible_python_interpreter: /usr/bin/python3.11
+            ansible_user: glitchy
+            ansible_env:
+                HOME: /home/glitchy
+            ansible_hostname: pipi

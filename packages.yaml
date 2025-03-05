@@ -1,0 +1,13 @@
+---
+packages:
+  - neovim
+  - vim
+  - nano
+  - curl
+  - wget
+  - unzip
+  - htop
+  - neofetch
+  - zsh
+  - python
+  - pip

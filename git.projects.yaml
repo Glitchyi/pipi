@@ -1,0 +1,60 @@
+- hosts: servers
+  tasks:
+  - name: Check if SSH key exists
+    stat:
+      path: "{{ ansible_env.HOME }}/.ssh/github_key.pub"
+    register: ssh_key
+  
+  - name: Generate SSH key
+    openssh_keypair:
+      path: "{{ ansible_env.HOME }}/.ssh/github_key"
+      type: ed25519
+      comment: "{{ ansible_user }}@{{ ansible_hostname }}"
+    when: not ssh_key.stat.exists
+
+  - name: Display public key
+    command: cat "{{ ansible_env.HOME }}/.ssh/github_key.pub"
+    register: public_key
+    when: not ssh_key.stat.exists
+
+
+  - name: Show GitHub SSH key instructions
+    ansible.builtin.pause:
+      prompt: |
+        ==============================================
+        GitHub SSH Key Setup Instructions
+        ==============================================
+        
+        1. Copy your SSH public key:
+        {{ public_key.stdout }}
+        
+        2. Add the key to your GitHub account:
+           a. Visit: https://github.com/settings/keys
+           b. Click "New SSH key"
+           c. Paste the key and give it a title
+        
+        3. Press ENTER to continue or Ctrl+C to cancel
+        ==============================================
+  
+    when: not ssh_key.stat.exists  
+  
+  - name: Add GitHub to known hosts
+    known_hosts:
+      name: github.com
+      key: "{{ lookup('pipe', 'ssh-keyscan -t ed25519 github.com') }}"
+      state: present
+
+  - name: Load repositories list
+    include_vars:
+      file: repos.yaml
+      name: repositories
+
+  - name: Clone repositories
+    git:
+      repo: "git@github.com:{{ item.org }}/{{ item.name }}.git"
+      dest: "{{ ansible_env.HOME }}/{{ item.name }}"
+      version: "{{ item.branch | default('main') }}"
+      clone: yes 
+      update: yes
+      key_file: "{{ ansible_env.HOME }}/.ssh/github_key"
+    loop: "{{ repositories }}"

@@ -1,0 +1,8 @@
+repositories:
+  - name: Media-Club-Main-Backend
+    org: MitsMediaClub
+    branch: main
+    
+  - name: Media_Club_Forms_Backend  
+    org: MitsMediaClub
+    branch: main

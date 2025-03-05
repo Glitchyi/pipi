@@ -1,0 +1,31 @@
+- name: PI Setup Script
+  hosts: servers
+  become: yes
+  vars_files:
+    - packages.yaml
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Gather package facts
+      package_facts:
+        manager: auto
+
+  tasks:
+    - name: Install required packages
+      apt:
+        pkg: "{{ packages }}"
+        state: present
+      when: packages is defined
+
+    - name: Include task files
+      block:
+        - include_tasks: docker.yaml
+          when: >
+            'docker-ce' not in ansible_facts.packages and 
+            'docker.io' not in ansible_facts.packages and
+            'docker' not in ansible_facts.packages
+        
+        - include_tasks: terminal.yaml
