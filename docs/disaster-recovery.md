@@ -39,6 +39,14 @@ Restore the files listed in `docs/secrets.md`. At minimum, restore the `.env` fi
 
 Restore Cloudflare tunnel credentials and OpenClaw state if those services need to preserve identity or sessions.
 
+For routine backups before a rebuild or disk replacement, write runtime backups to a protected external path:
+
+```sh
+BACKUP_ROOT=/mnt/backup/homelab-$(date -u +%Y%m%d-%H%M%SZ) ./scripts/backup-runtime.sh
+```
+
+Set `INCLUDE_SECRETS=1` only when `BACKUP_ROOT` points to encrypted storage. The default backup exports Docker volumes and writes a manifest, but does not copy secret contents.
+
 ## 5. Start Compose projects
 
 After secrets are restored:

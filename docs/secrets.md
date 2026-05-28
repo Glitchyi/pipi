@@ -35,6 +35,7 @@ For this host, k3s currently appears to run only default components. If no custo
 
 Observability history lives in Docker volumes:
 
+- `monke-proxy_redis_data`
 - `observing_grafana-data`
 - `observing_prometheus-data`
 - `observing_loki-data`
