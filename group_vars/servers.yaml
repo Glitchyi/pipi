@@ -43,6 +43,23 @@ compose_projects:
     required_secret_keys:
       - WATCHTOWER_TOKEN
 
+  - name: monke-proxy
+    repo: git@github.com:Glitchyi/monke-proxy.git
+    branch: main
+    dest: "{{ server_home }}/monke-proxy"
+    compose_file: docker-compose.yml
+    env_file: .env
+    build: true
+    public_ports: []
+    localhost_ports:
+      - "8080:8080"
+    cloudflared_target: http://127.0.0.1:8080
+    required_secret_files:
+      - .env
+    required_secret_keys:
+      - API_URL
+      - APE_KEY
+
   - name: observing
     repo: git@github.com:Glitchyi/observing.git
     branch: main
@@ -83,20 +100,3 @@ compose_projects:
       - CLAUDE_AI_SESSION_KEY
       - CLAUDE_WEB_SESSION_KEY
       - CLAUDE_WEB_COOKIE
-
-  - name: monke-proxy
-    repo: git@github.com:Glitchyi/monke-proxy.git
-    branch: main
-    dest: "{{ server_home }}/monke-proxy"
-    compose_file: docker-compose.yml
-    env_file: .env
-    build: true
-    public_ports: []
-    localhost_ports:
-      - "8080:8080"
-    cloudflared_target: http://127.0.0.1:8080
-    required_secret_files:
-      - .env
-    required_secret_keys:
-      - API_URL
-      - APE_KEY
