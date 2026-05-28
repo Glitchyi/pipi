@@ -2,6 +2,8 @@
 
 Snapshot date: 2026-05-29 IST.
 
+For deeper per-project documentation, GitHub links, dependencies, and recovery notes, see `docs/projects.md`.
+
 ## Host
 
 - Hostname: `pipi`

@@ -24,6 +24,7 @@ ansible-playbook -i inventory.yaml main.yaml -e restore_start_compose=true
 
 See:
 
+- `docs/projects.md` for the deep project map, GitHub links, dependencies, and runbooks.
 - `docs/system-inventory.md` for the current service map.
 - `docs/secrets.md` for the secret and state items that must be backed up outside git.
 - `docs/disaster-recovery.md` for the restore order.
