@@ -1,1 +1,0 @@
-This is an ansible project to setup my raspberri pi 

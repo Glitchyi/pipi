@@ -1,12 +1,16 @@
 ---
+- name: Set Docker apt architecture
+  ansible.builtin.set_fact:
+    docker_apt_arch: "{{ 'arm64' if ansible_architecture in ['aarch64', 'arm64'] else 'amd64' }}"
+
 - name: Add Docker GPG key
   apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
+    url: https://download.docker.com/linux/debian/gpg
     state: present
 
 - name: Add Docker Repository
   apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    repo: "deb [arch={{ docker_apt_arch }}] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
     state: present
 
 - name: Install Docker
@@ -15,5 +19,24 @@
       - docker-ce
       - docker-ce-cli
       - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
     state: latest
     update_cache: yes
+
+- name: Ensure docker group exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add server user to docker group
+  ansible.builtin.user:
+    name: "{{ server_user }}"
+    groups: docker
+    append: true
+
+- name: Enable and start Docker
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started

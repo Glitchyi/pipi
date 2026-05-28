@@ -1,0 +1,51 @@
+---
+- name: Check if k3s is installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+
+- name: Download k3s installer
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/install-k3s.sh
+    mode: "0755"
+  when: not k3s_binary.stat.exists
+
+- name: Install k3s
+  ansible.builtin.command: /tmp/install-k3s.sh
+  environment:
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+    INSTALL_K3S_EXEC: "{{ k3s_exec }}"
+  when: not k3s_binary.stat.exists
+
+- name: Enable and start k3s
+  ansible.builtin.systemd:
+    name: k3s
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Ensure user kubeconfig directory exists
+  ansible.builtin.file:
+    path: "{{ server_home }}/.kube"
+    state: directory
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0700"
+
+- name: Copy k3s kubeconfig for the server user
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ server_home }}/.kube/config"
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0600"
+    remote_src: true
+
+- name: Validate k3s service state
+  ansible.builtin.command: systemctl is-active k3s
+  changed_when: false
+
+- name: Validate k3s binary config support
+  ansible.builtin.command: k3s check-config
+  changed_when: false

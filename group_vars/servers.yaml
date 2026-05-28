@@ -1,0 +1,102 @@
+---
+server_user: glitchy
+server_home: "/home/{{ server_user }}"
+
+restore_start_compose: false
+
+k3s_manage: true
+k3s_version: v1.35.4+k3s1
+k3s_exec: "server --write-kubeconfig-mode 0640 --write-kubeconfig-group {{ server_user }}"
+
+cloudflared_manage: true
+cloudflared_deb_url: https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+cloudflared_tunnel_token: ""
+
+compose_projects:
+  - name: ATS
+    repo: git@github.com:Glitchyi/ATS.git
+    branch: main
+    dest: "{{ server_home }}/ATS"
+    compose_file: docker-compose.yml
+    env_file: .env
+    build: true
+    public_ports:
+      - "3000:3000"
+    required_secret_files:
+      - .env
+    required_secret_keys:
+      - OPENAI_API_KEY
+
+  - name: blog
+    repo: git@github.com:Glitchyi/blog.git
+    branch: main
+    dest: "{{ server_home }}/blog"
+    compose_file: docker-compose.yml
+    env_file: .env
+    build: false
+    public_ports:
+      - "3002:80"
+      - "3003:8080"
+    required_secret_files:
+      - .env
+      - "{{ server_home }}/.docker/config.json"
+    required_secret_keys:
+      - WATCHTOWER_TOKEN
+
+  - name: observing
+    repo: git@github.com:Glitchyi/observing.git
+    branch: main
+    dest: "{{ server_home }}/observing"
+    compose_file: docker-compose.yml
+    env_file: .env
+    build: false
+    public_ports:
+      - "3030:3000"
+    localhost_ports:
+      - "9090:9090"
+      - "3100:3100"
+      - "3200:3200"
+      - "12345:12345"
+      - "4317:4317"
+      - "4318:4318"
+    required_secret_files:
+      - .env
+    required_secret_keys:
+      - GRAFANA_ADMIN_PASSWORD
+
+  - name: openclaw
+    repo: https://github.com/openclaw/openclaw.git
+    branch: main
+    dest: "{{ server_home }}/openclaw"
+    compose_file: docker-compose.yml
+    env_file: .env
+    build: true
+    public_ports:
+      - "18789:18789"
+      - "18790:18790"
+    required_secret_files:
+      - .env
+      - "{{ server_home }}/.openclaw"
+      - "{{ server_home }}/.openclaw-auth-profile-secrets"
+    required_secret_keys:
+      - OPENCLAW_GATEWAY_TOKEN
+      - CLAUDE_AI_SESSION_KEY
+      - CLAUDE_WEB_SESSION_KEY
+      - CLAUDE_WEB_COOKIE
+
+  - name: monke-proxy
+    repo: git@github.com:Glitchyi/monke-proxy.git
+    branch: main
+    dest: "{{ server_home }}/monke-proxy"
+    compose_file: docker-compose.yml
+    env_file: .env
+    build: true
+    public_ports: []
+    localhost_ports:
+      - "8080:8080"
+    cloudflared_target: http://127.0.0.1:8080
+    required_secret_files:
+      - .env
+    required_secret_keys:
+      - API_URL
+      - APE_KEY

@@ -1,0 +1,27 @@
+---
+- name: Install cloudflared package
+  ansible.builtin.apt:
+    deb: "{{ cloudflared_deb_url }}"
+  when: cloudflared_manage | bool
+
+- name: Check cloudflared service
+  ansible.builtin.command: systemctl is-enabled cloudflared
+  register: cloudflared_service
+  failed_when: false
+  changed_when: false
+  when: cloudflared_manage | bool
+
+- name: Install Cloudflare tunnel service when token is provided
+  ansible.builtin.command: cloudflared service install "{{ cloudflared_tunnel_token }}"
+  no_log: true
+  when:
+    - cloudflared_manage | bool
+    - cloudflared_tunnel_token | length > 0
+    - cloudflared_service.rc != 0
+
+- name: Remind operator to restore Cloudflare tunnel token
+  ansible.builtin.debug:
+    msg: "cloudflared is installed, but cloudflared_tunnel_token is empty. Configure Cloudflare Tunnel separately or provide it through Ansible Vault."
+  when:
+    - cloudflared_manage | bool
+    - cloudflared_tunnel_token | length == 0

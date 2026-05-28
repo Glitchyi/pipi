@@ -27,5 +27,13 @@
             'docker-ce' not in ansible_facts.packages and 
             'docker.io' not in ansible_facts.packages and
             'docker' not in ansible_facts.packages
-        
+
+        - include_tasks: k3s.yaml
+          when: k3s_manage | default(true) | bool
+
+        - include_tasks: cloudflared.yaml
+          when: cloudflared_manage | default(true) | bool
+
+        - include_tasks: compose-projects.yaml
+
         - include_tasks: terminal.yaml

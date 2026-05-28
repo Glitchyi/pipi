@@ -1,13 +1,16 @@
 ---
 packages:
+  - ca-certificates
   - neovim
   - vim
   - nano
   - curl
   - wget
   - unzip
+  - git
+  - gnupg
   - htop
   - neofetch
   - zsh
-  - python
-  - pip
+  - python3
+  - python3-pip

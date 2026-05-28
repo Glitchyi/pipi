@@ -1,0 +1,25 @@
+# Local secrets and restore-only material
+.env
+.env.*
+!.env.example
+secrets/
+*.vault
+*.key
+*.pem
+*.kubeconfig
+kubeconfig*
+cloudflared-token*
+cloudflared-credentials*
+
+# Backups and generated archives
+backups/
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
+# Runtime/cache noise
+.ansible/
+*.retry
+.DS_Store
+Thumbs.db

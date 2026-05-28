@@ -1,0 +1,82 @@
+---
+- name: Ensure project parent directory exists
+  ansible.builtin.file:
+    path: "{{ server_home }}"
+    state: directory
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0755"
+
+- name: Ensure SSH directory exists
+  ansible.builtin.file:
+    path: "{{ server_home }}/.ssh"
+    state: directory
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0700"
+
+- name: Trust GitHub SSH host key
+  ansible.builtin.known_hosts:
+    path: "{{ server_home }}/.ssh/known_hosts"
+    name: github.com
+    key: "{{ lookup('pipe', 'ssh-keyscan -t ed25519 github.com') }}"
+    state: present
+  become: true
+  become_user: "{{ server_user }}"
+
+- name: Clone or update Compose project repositories
+  ansible.builtin.git:
+    repo: "{{ item.repo }}"
+    dest: "{{ item.dest }}"
+    version: "{{ item.branch | default('main') }}"
+    clone: true
+    update: true
+    accept_hostkey: true
+  loop: "{{ compose_projects }}"
+  become: true
+  become_user: "{{ server_user }}"
+
+- name: Check project secret files
+  ansible.builtin.stat:
+    path: "{{ item.1 if item.1 is match('^/') else item.0.dest ~ '/' ~ item.1 }}"
+  loop: "{{ compose_projects | subelements('required_secret_files', skip_missing=True) }}"
+  register: project_secret_files
+
+- name: Print missing secret restore reminders
+  ansible.builtin.debug:
+    msg: "Restore {{ item.item.1 }} for {{ item.item.0.name }} before starting this project."
+  loop: "{{ project_secret_files.results }}"
+  when: not item.stat.exists
+
+- name: Check project env files
+  ansible.builtin.stat:
+    path: "{{ item.dest }}/{{ item.env_file }}"
+  loop: "{{ compose_projects }}"
+  register: compose_env_files
+  when: item.env_file is defined
+
+- name: Validate Compose files when project env exists
+  ansible.builtin.command: docker compose -f "{{ item.compose_file | default('docker-compose.yml') }}" config --quiet
+  args:
+    chdir: "{{ item.dest }}"
+  loop: "{{ compose_projects }}"
+  changed_when: false
+  when: item.env_file is not defined or (compose_env_files.results | selectattr('item.name', 'equalto', item.name) | map(attribute='stat.exists') | first | default(false))
+
+- name: Start Compose projects that need local builds
+  ansible.builtin.command: docker compose -f "{{ item.compose_file | default('docker-compose.yml') }}" up -d --build
+  args:
+    chdir: "{{ item.dest }}"
+  loop: "{{ compose_projects }}"
+  when:
+    - restore_start_compose | bool
+    - item.build | default(false) | bool
+
+- name: Start Compose projects using pulled images
+  ansible.builtin.command: docker compose -f "{{ item.compose_file | default('docker-compose.yml') }}" up -d
+  args:
+    chdir: "{{ item.dest }}"
+  loop: "{{ compose_projects }}"
+  when:
+    - restore_start_compose | bool
+    - not (item.build | default(false) | bool)
