@@ -1,5 +1,11 @@
 # pipi
 
+## Current Pi fleet
+
+The deployed fleet now uses **pipi** for Jellyfin and Home Assistant, and **popo** for Hermes/Kuttu, Grafana and Prometheus. Native Tailscale and cloudflared run on both hosts. Kuttu has a password-protected LAN dashboard, dedicated SSH access to both Pis, daily checks and a service ledger.
+
+See [the fleet status and checklist](docs/pi-fleet-status.md) for completed setup, daily maintenance schedules, access boundaries and pending work (updated 28 October 2026). The separate deployment automation changes are still awaiting publication/review.
+
 Ansible and recovery notes for rebuilding the `pipi` Raspberry Pi homelab host.
 
 This repository is intended to recreate the machine configuration and project layout after a disk or host failure. It does not store live secrets. Restore `.env` files, Cloudflare tunnel credentials, GitHub/registry credentials, OpenClaw state, and k3s kubeconfig from an encrypted backup or password manager.
