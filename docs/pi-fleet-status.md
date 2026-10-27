@@ -6,7 +6,7 @@ Updated: 28 October 2026. This summarizes the deployed systems and recorded veri
 
 | Host | Hardware and storage | Role |
 |---|---|---|
-| pipi | Raspberry Pi 5, 16 GB RAM; USB OS; existing NVMe data drive preserved | Jellyfin, Home Assistant, Node Exporter and cAdvisor |
+| pipi | Raspberry Pi 5, 16 GB RAM; USB OS; existing NVMe data drive preserved | Home Assistant, Node Exporter and cAdvisor |
 | popo | Raspberry Pi 5, 8 GB RAM; microSD OS | Hermes/Kuttu, Grafana, Prometheus, Node Exporter and cAdvisor |
 
 Tailscale and cloudflared are native services on both hosts. Applications use Docker Compose managed by systemd. Neither Pi is configured as a Tailscale exit node. Private addresses, credentials and keys are intentionally omitted from this public status document.
@@ -17,7 +17,7 @@ Tailscale and cloudflared are native services on both hosts. Applications use Do
 - [x] Persistent Ethernet configuration with existing Wi-Fi fallback retained.
 - [x] Key-only SSH, verified from Windows and Mac; existing client keys retained.
 - [x] Existing NVMe mounted without formatting or erasing data.
-- [x] Jellyfin and supported Home Assistant Container deployed on pipi.
+- [x] Supported Home Assistant Container deployed on pipi.
 - [x] Grafana and Prometheus deployed on popo, with a provisioned dashboard and five verified monitoring targets.
 - [x] Node Exporter and cAdvisor deployed on both hosts; memory accounting and container limits verified.
 - [x] Separate native Cloudflare tunnels enrolled, enabled at boot and checked after restart. Application routes remain a later configuration step.
@@ -51,7 +51,6 @@ Automatic cleanup is limited to regular files older than seven days directly ins
 
 ## Pending
 
-- [ ] Confirm Jellyfin's first user and media-library setup.
 - [ ] Confirm Home Assistant owner onboarding and required integrations. Container mode has no Supervisor/add-on manager.
 - [ ] Confirm the owner's first Grafana login; backend authentication and dashboard checks have already passed.
 - [ ] Configure Cloudflare application hostnames/private routes if needed.
@@ -66,3 +65,5 @@ Automatic cleanup is limited to regular files older than seven days directly ins
 Work progressed through USB/OS preparation, base provisioning, SSH and networking, application/monitoring deployment, Cloudflare onboarding and connector updates, then Hermes authentication, Telegram, the Kuttu persona, LAN dashboard and fleet care.
 
 The four related setup chats are grouped locally under **Pi Fleet — pipi & popo**. Private chat transcripts and credentials are not included here.
+
+Jellyfin was removed from pipi on 28 October 2026; its dedicated application state was deleted and shared media was preserved.
